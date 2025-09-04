@@ -1,6 +1,3 @@
-
-## 4.3 `.gitignore` (à la racine)
-```gitignore
 # Python
 __pycache__/
 *.pyc

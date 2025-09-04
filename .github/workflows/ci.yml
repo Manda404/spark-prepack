@@ -58,10 +58,13 @@ jobs:
         run: poetry install --no-interaction           # Installe deps (prod + dev)
 
       # 7) Lint/format (optionnel : ne casse pas la CI si vous débutez)
-      - name: 🔍 Run format & import checks
+      # 7) Lint & format checks (avec Ruff au lieu de Black + isort)
+      - name: 🔍 Run Ruff checks
         run: |
-          poetry run black --check .        # Vérifie formatage
-          poetry run isort --check-only .   # Vérifie ordre des imports
+          poetry run ruff check .           # Vérifie lint + imports + style
+          poetry run ruff format --check .  # Vérifie formatage type Black
+          poetry run ruff check --fix .   # (Optionnel) Corrige automatiquement
+
 
       # 8) Tests unitaires (avec jolis groupes)
       - name: 🧪 Run unit tests (all)
