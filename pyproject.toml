@@ -14,6 +14,8 @@ pytest = "^8.2.0"
 pytest-cov = "^4.1.0"
 black = "^24.4.2"
 isort = "^5.13.2"
+ruff = "^0.6.0"   # 👈 ajoute Ruff ici
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
