@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "spark-prepkit"
+version = "0.1.0"
+description = "Preprocess Spark DataFrames with CI-friendly tests"
+authors = ["Manda Surel s239150.eps@gmail.com"]
+packages = [{ include = "spark_prepkit", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+pyspark = "^3.5.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+pytest-cov = "^4.1.0"
+black = "^24.4.2"
+isort = "^5.13.2"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
