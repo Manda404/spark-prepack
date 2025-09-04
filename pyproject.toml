@@ -2,7 +2,7 @@
 name = "spark-prepkit"
 version = "0.1.0"
 description = "Preprocess Spark DataFrames with CI-friendly tests"
-authors = ["Manda Surel s239150.eps@gmail.com"]
+authors = ["Manda Surel <s239150.eps@gmail.com>"]
 packages = [{ include = "spark_prepkit", from = "src" }]
 
 [tool.poetry.dependencies]
