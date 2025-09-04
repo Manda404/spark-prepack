@@ -1,54 +1,89 @@
-name: CI
+name: CI - Tests and Linting
 
 on:
-  push: { branches: [ main ] }
-  pull_request: { branches: [ main ] }
+  push:                        # Déclenche sur push
+    branches: [ main, feature/testsinglefonction ] # Branches surveillées
+  pull_request:                # Déclenche sur PR
+    branches: [ main ]
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest     # Machine GitHub (Ubuntu)
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11"]  # Teste plusieurs versions de Python
 
     steps:
-      - uses: actions/checkout@v4
+      # 1) Récupération du code
+      - name: 🚚 Checkout repository
+        uses: actions/checkout@v4        # Clone le repo dans le runner
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # 2) Python
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5    # Installe la version de Python demandée
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Set up Java (Spark needs it)
-        uses: actions/setup-java@v4
+      # 3) Java (requis par Spark)
+      - name: ☕ Set up Java 11 (required by Spark)
+        uses: actions/setup-java@v4      # Installe Java
         with:
-          distribution: temurin
-          java-version: "11"
+          distribution: temurin          # Distribution OpenJDK
+          java-version: "11"             # Version compatible Spark 3.5.x
 
-      - name: Install Poetry
-        uses: abatilo/actions-poetry@v3
+      # 4) Poetry
+      - name: 📦 Install Poetry
+        uses: abatilo/actions-poetry@v3  # Installe Poetry
         with:
-          poetry-version: "1.8.3"
+          poetry-version: "1.8.3"        # Version stable de Poetry
 
-      - name: Configure Poetry virtualenv
+      - name: 🧭 Configure Poetry virtualenv
         run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true         # Active l'env virtuel Poetry
+          poetry config virtualenvs.in-project true     # Met l'env dans .venv du repo
 
-      - name: Cache Poetry
+      # 5) Cache (accélère les builds)
+      - name: 🧠 Cache Poetry and venv
         uses: actions/cache@v4
         with:
-          path: |
+          path: |                                      # Dossiers à mettre en cache
             .venv
             ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }} # Clé unique par lockfile
           restore-keys: |
-            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-poetry-                   # Fallback si la clé exacte n'existe pas
 
-      - name: Install deps
-        run: poetry install --no-interaction
+      # 6) Installation des dépendances
+      - name: 🛠️ Install dependencies
+        run: poetry install --no-interaction           # Installe deps (prod + dev)
 
-      - name: Run tests
+      # 7) Lint/format (optionnel : ne casse pas la CI si vous débutez)
+      - name: 🔍 Run format & import checks
+        run: |
+          poetry run black --check .        # Vérifie formatage
+          poetry run isort --check-only .   # Vérifie ordre des imports
+
+      # 8) Tests unitaires (avec jolis groupes)
+      - name: 🧪 Run unit tests (all)
         env:
-          PYSPARK_PYTHON: ${{ github.workspace }}/.venv/bin/python
-        run: poetry run pytest --cov=spark_prepkit -q
+          PYSPARK_PYTHON: ${{ github.workspace }}/.venv/bin/python  # Force PySpark à utiliser l'env Poetry
+        run: |
+          # Lancement global (coverage sur le package)
+          poetry run pytest --cov=spark_prepkit -q
+
+      # 9) (Optionnel) Exemples de tests ciblés (séparateurs visuels)
+      - name: 🧪 trim_strings
+        if: always()                               # Toujours exécuter pour afficher les sections
+        run: poetry run pytest -q tests/test_trim_strings.py
+
+      - name: 🧪 normalize_yes_no
+        if: always()
+        run: poetry run pytest -q tests/test_normalize_yes_no.py
+
+      - name: 🧪 cast_numerics
+        if: always()
+        run: poetry run pytest -q tests/test_cast_numerics.py
+
+      - name: 🧪 add_bmi
+        if: always()
+        run: poetry run pytest -q tests/test_add_bmi.py
